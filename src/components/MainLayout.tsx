@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTheme } from "../themes/ThemeProvider";
 import Sidebar from "./Sidebar";
@@ -11,6 +11,17 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children, onMenuPress }) => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const { themeColors } = useTheme();
+
+	// Update sidebar when onMenuPress is called from parent
+	useEffect(() => {
+		if (onMenuPress) {
+			const originalOnMenuPress = onMenuPress;
+			onMenuPress = () => {
+				toggleSidebar();
+				originalOnMenuPress();
+			};
+		}
+	}, [onMenuPress]);
 
 	const toggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen);

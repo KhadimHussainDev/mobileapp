@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 // Import screens
 import CustomHeader from "../components/CustomHeader";
-import MainLayout from "../components/MainLayout";
+import Sidebar from "../components/Sidebar";
 import ContactScreen from "../screens/ContactScreen";
 import EventsScreen from "../screens/EventsScreen";
 import HelpCenterScreen from "../screens/HelpCenterScreen";
@@ -46,90 +46,73 @@ export const BottomTabNavigator = () => {
 		setIsSidebarOpen(true);
 	}, []);
 
-	// Wrap each screen with MainLayout
-	const HomeScreenWithLayout = () => (
-		<MainLayout onMenuPress={openSidebar}>
-			<HomeScreen />
-		</MainLayout>
-	);
-
-	const EventsScreenWithLayout = () => (
-		<MainLayout onMenuPress={openSidebar}>
-			<EventsScreen />
-		</MainLayout>
-	);
-
-	const HelpCenterScreenWithLayout = () => (
-		<MainLayout onMenuPress={openSidebar}>
-			<HelpCenterScreen />
-		</MainLayout>
-	);
-
-	const ContactScreenWithLayout = () => (
-		<MainLayout onMenuPress={openSidebar}>
-			<ContactScreen />
-		</MainLayout>
-	);
+	const closeSidebar = useCallback(() => {
+		setIsSidebarOpen(false);
+	}, []);
 
 	return (
-		<Tab.Navigator
-			screenOptions={({ route }: ScreenOptionsProps) => ({
-				tabBarIcon: ({ focused, color, size }: TabBarIconProps) => {
-					let iconName = "";
+		<>
+			<Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
 
-					if (route.name === "Home") {
-						iconName = focused ? "home" : "home-outline";
-					} else if (route.name === "Events") {
-						iconName = focused ? "calendar" : "calendar-outline";
-					} else if (route.name === "HelpCenter") {
-						iconName = focused ? "help-circle" : "help-circle-outline";
-					} else if (route.name === "Contact") {
-						iconName = focused ? "mail" : "mail-outline";
-					}
+			<Tab.Navigator
+				screenOptions={({ route }: ScreenOptionsProps) => ({
+					tabBarIcon: ({ focused, color, size }: TabBarIconProps) => {
+						let iconName = "";
 
-					return <Icon name={iconName} size={size} color={color} />;
-				},
-				tabBarActiveTintColor: colors.customBlue,
-				tabBarInactiveTintColor: colors.griclair,
-				header: ({ navigation, route, options }: HeaderProps) => {
-					return (
-						<CustomHeader
-							title={options.title || route.name}
-							showBackButton={false}
-							onMenuPress={openSidebar}
-						/>
-					);
-				},
-			})}
-		>
-			<Tab.Screen
-				name="Home"
-				component={HomeScreenWithLayout}
-				options={{
-					title: t("home"),
-				}}
-			/>
-			<Tab.Screen
-				name="Events"
-				component={EventsScreenWithLayout}
-				options={{
-					title: t("event"),
-				}}
-			/>
-			<Tab.Screen
-				name="HelpCenter"
-				component={HelpCenterScreenWithLayout}
-				options={{
-					title: t("assist"),
-				}}
-			/>
-			<Tab.Screen
-				name="Contact"
-				component={ContactScreenWithLayout}
-				options={{
-					title: t("contact"),
-				}}
-			/>
-		</Tab.Navigator>
+						if (route.name === "Home") {
+							iconName = focused ? "home" : "home-outline";
+						} else if (route.name === "Events") {
+							iconName = focused ? "calendar" : "calendar-outline";
+						} else if (route.name === "HelpCenter") {
+							iconName = focused ? "help-circle" : "help-circle-outline";
+						} else if (route.name === "Contact") {
+							iconName = focused ? "mail" : "mail-outline";
+						}
+
+						return <Icon name={iconName} size={size} color={color} />;
+					},
+					tabBarActiveTintColor: colors.customBlue,
+					tabBarInactiveTintColor: colors.griclair,
+					header: ({ navigation, route, options }: HeaderProps) => {
+						return (
+							<CustomHeader
+								title={options.title || route.name}
+								showBackButton={false}
+								onMenuPress={openSidebar}
+							/>
+						);
+					},
+				})}
+			>
+				<Tab.Screen
+					name="Home"
+					component={HomeScreen}
+					options={{
+						title: t("home"),
+					}}
+				/>
+				<Tab.Screen
+					name="Events"
+					component={EventsScreen}
+					options={{
+						title: t("event"),
+					}}
+				/>
+				<Tab.Screen
+					name="HelpCenter"
+					component={HelpCenterScreen}
+					options={{
+						title: t("assist"),
+					}}
+				/>
+				<Tab.Screen
+					name="Contact"
+					component={ContactScreen}
+					options={{
+						title: t("contact"),
+					}}
+				/>
+			</Tab.Navigator>
+		</>
 	);
 };

@@ -40,6 +40,12 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
 		navigation.navigate("SignUp");
 	};
 
+	const handleMenuPress = () => {
+		if (onMenuPress) {
+			onMenuPress();
+		}
+	};
+
 	return (
 		<View
 			style={[styles.headerContainer, { backgroundColor: colors.customBlue }]}
@@ -56,8 +62,11 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
 							<Icon name="arrow-back" size={24} color={colors.white} />
 						</TouchableOpacity>
 					) : (
-						<TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
-							<Icon name="menu" size={24} color={colors.white} />
+						<TouchableOpacity
+							onPress={handleMenuPress}
+							style={styles.menuButton}
+						>
+							<Icon name="menu" size={26} color={colors.white} />
 						</TouchableOpacity>
 					)}
 					<Text style={styles.title}>{title}</Text>
@@ -109,6 +118,13 @@ const styles = StyleSheet.create({
 	},
 	iconButton: {
 		marginRight: 16,
+		padding: 4,
+	},
+	menuButton: {
+		marginRight: 16,
+		padding: 4,
+		borderRadius: 4,
+		backgroundColor: "rgba(255, 255, 255, 0.1)",
 	},
 	title: {
 		fontSize: 20,

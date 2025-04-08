@@ -3,7 +3,9 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
+	Platform,
 	ScrollView,
+	StatusBar,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -25,13 +27,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 	const { t, i18n } = useTranslation("header");
 	const { colors, themeColors, theme, toggleTheme } = useTheme();
 
-	const menuItems = [
-		{ name: "Home", label: t("home"), icon: "home" },
-		{ name: "Events", label: t("event"), icon: "calendar" },
-		{ name: "HelpCenter", label: t("assist"), icon: "help-circle" },
-		{ name: "Contact", label: t("contact"), icon: "mail" },
-	];
-
 	const navigateTo = (screen: keyof RootStackParamList) => {
 		onClose();
 		navigation.navigate(screen);
@@ -50,7 +45,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 			<View
 				style={[styles.sidebar, { backgroundColor: themeColors.background }]}
 			>
-				<View style={[styles.header, { backgroundColor: colors.customBlue }]}>
+				<View
+					style={[
+						styles.header,
+						{
+							backgroundColor: colors.customBlue,
+							paddingTop:
+								Platform.OS === "ios" ? 44 : StatusBar.currentHeight || 0,
+						},
+					]}
+				>
 					<Text style={styles.headerTitle}>Ottawa Events</Text>
 					<TouchableOpacity onPress={onClose} style={styles.closeButton}>
 						<Icon name="close" size={24} color="white" />
@@ -58,21 +62,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 				</View>
 
 				<ScrollView style={styles.menuContainer}>
-					{menuItems.map((item, index) => (
-						<TouchableOpacity
-							key={index}
-							style={styles.menuItem}
-							onPress={() => navigateTo(item.name as keyof RootStackParamList)}
-						>
-							<Icon name={item.icon} size={22} color={colors.customBlue} />
-							<Text style={[styles.menuItemText, { color: themeColors.text }]}>
-								{item.label}
-							</Text>
-						</TouchableOpacity>
-					))}
-
-					<View style={styles.divider} />
-
 					<TouchableOpacity
 						style={styles.menuItem}
 						onPress={() => navigateTo("Login")}
@@ -165,7 +154,7 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		left: 0,
 		right: 0,
-		zIndex: 100,
+		zIndex: 1000,
 		flexDirection: "row",
 	},
 	overlay: {
