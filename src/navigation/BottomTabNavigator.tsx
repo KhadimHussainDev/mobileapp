@@ -46,8 +46,29 @@ export const BottomTabNavigator = () => {
 		setIsSidebarOpen(true);
 	}, []);
 
-	const renderTabScreen = ({ route, children }: any) => (
-		<MainLayout onMenuPress={openSidebar}>{children}</MainLayout>
+	// Wrap each screen with MainLayout
+	const HomeScreenWithLayout = () => (
+		<MainLayout onMenuPress={openSidebar}>
+			<HomeScreen />
+		</MainLayout>
+	);
+
+	const EventsScreenWithLayout = () => (
+		<MainLayout onMenuPress={openSidebar}>
+			<EventsScreen />
+		</MainLayout>
+	);
+
+	const HelpCenterScreenWithLayout = () => (
+		<MainLayout onMenuPress={openSidebar}>
+			<HelpCenterScreen />
+		</MainLayout>
+	);
+
+	const ContactScreenWithLayout = () => (
+		<MainLayout onMenuPress={openSidebar}>
+			<ContactScreen />
+		</MainLayout>
 	);
 
 	return (
@@ -83,28 +104,28 @@ export const BottomTabNavigator = () => {
 		>
 			<Tab.Screen
 				name="Home"
-				component={HomeScreen}
+				component={HomeScreenWithLayout}
 				options={{
 					title: t("home"),
 				}}
 			/>
 			<Tab.Screen
 				name="Events"
-				component={EventsScreen}
+				component={EventsScreenWithLayout}
 				options={{
 					title: t("event"),
 				}}
 			/>
 			<Tab.Screen
 				name="HelpCenter"
-				component={HelpCenterScreen}
+				component={HelpCenterScreenWithLayout}
 				options={{
 					title: t("assist"),
 				}}
 			/>
 			<Tab.Screen
 				name="Contact"
-				component={ContactScreen}
+				component={ContactScreenWithLayout}
 				options={{
 					title: t("contact"),
 				}}

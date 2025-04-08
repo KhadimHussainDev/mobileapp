@@ -2,7 +2,14 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+	Platform,
+	StatusBar,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../themes/ThemeProvider";
@@ -34,45 +41,57 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
 	};
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.customBlue }]}>
-			<View style={styles.leftContainer}>
-				{showBackButton ? (
-					<TouchableOpacity onPress={onBackPress} style={styles.iconButton}>
-						<Icon name="arrow-back" size={24} color={colors.white} />
+		<View
+			style={[styles.headerContainer, { backgroundColor: colors.customBlue }]}
+		>
+			<StatusBar
+				barStyle="light-content"
+				backgroundColor={colors.customBlue}
+				translucent={true}
+			/>
+			<View style={styles.container}>
+				<View style={styles.leftContainer}>
+					{showBackButton ? (
+						<TouchableOpacity onPress={onBackPress} style={styles.iconButton}>
+							<Icon name="arrow-back" size={24} color={colors.white} />
+						</TouchableOpacity>
+					) : (
+						<TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
+							<Icon name="menu" size={24} color={colors.white} />
+						</TouchableOpacity>
+					)}
+					<Text style={styles.title}>{title}</Text>
+				</View>
+
+				<View style={styles.rightContainer}>
+					<TouchableOpacity style={styles.iconButton} onPress={toggleTheme}>
+						<Icon
+							name={theme === "dark" ? "sunny" : "moon"}
+							size={22}
+							color={colors.white}
+						/>
 					</TouchableOpacity>
-				) : (
-					<TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
-						<Icon name="menu" size={24} color={colors.white} />
+
+					<TouchableOpacity style={styles.authButton} onPress={handleLogin}>
+						<Text style={styles.authButtonText}>{t("login")}</Text>
 					</TouchableOpacity>
-				)}
-				<Text style={styles.title}>{title}</Text>
-			</View>
 
-			<View style={styles.rightContainer}>
-				<TouchableOpacity style={styles.iconButton} onPress={toggleTheme}>
-					<Icon
-						name={theme === "dark" ? "sunny" : "moon"}
-						size={22}
-						color={colors.white}
-					/>
-				</TouchableOpacity>
-
-				<TouchableOpacity style={styles.authButton} onPress={handleLogin}>
-					<Text style={styles.authButtonText}>{t("login")}</Text>
-				</TouchableOpacity>
-
-				<TouchableOpacity
-					style={[styles.authButton, styles.signUpButton]}
-					onPress={handleSignUp}
-				>
-					<Text style={styles.authButtonText}>{t("signup")}</Text>
-				</TouchableOpacity>
+					<TouchableOpacity
+						style={[styles.authButton, styles.signUpButton]}
+						onPress={handleSignUp}
+					>
+						<Text style={styles.authButtonText}>{t("signup")}</Text>
+					</TouchableOpacity>
+				</View>
 			</View>
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
+	headerContainer: {
+		paddingTop: Platform.OS === "ios" ? 44 : StatusBar.currentHeight,
+	},
 	container: {
 		height: 60,
 		flexDirection: "row",

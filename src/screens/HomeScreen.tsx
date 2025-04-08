@@ -99,7 +99,11 @@ const HomeScreen = () => {
 											{ backgroundColor: colors.grisvif },
 										]}
 									>
-										<Text style={{ color: themeColors.text }}>{category}</Text>
+										<Text
+											style={[styles.categoryText, { color: themeColors.text }]}
+										>
+											{category}
+										</Text>
 									</View>
 								)
 							)}
@@ -197,6 +201,9 @@ const styles = StyleSheet.create({
 		marginBottom: 10,
 		width: "48%",
 		alignItems: "center",
+	},
+	categoryText: {
+		fontWeight: "bold",
 	},
 	organizersList: {
 		flexDirection: "row",

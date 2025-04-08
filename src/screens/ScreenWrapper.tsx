@@ -5,13 +5,17 @@ import { useTheme } from "../themes/ThemeProvider";
 
 interface ScreenWrapperProps {
 	children: React.ReactNode;
+	onMenuPress?: () => void;
 }
 
-const ScreenWrapper: React.FC<ScreenWrapperProps> = ({ children }) => {
+const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
+	children,
+	onMenuPress,
+}) => {
 	const { themeColors } = useTheme();
 
 	return (
-		<MainLayout>
+		<MainLayout onMenuPress={onMenuPress}>
 			<View
 				style={[styles.container, { backgroundColor: themeColors.background }]}
 			>

@@ -1,6 +1,5 @@
-import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { LogBox } from "react-native";
+import { LogBox, StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./src/i18n/i18n";
 import { AppNavigator } from "./src/navigation/AppNavigator";
@@ -21,7 +20,11 @@ const App = () => {
 	return (
 		<SafeAreaProvider>
 			<ThemeProvider>
-				<StatusBar style="auto" />
+				<StatusBar
+					barStyle="light-content"
+					backgroundColor="#3B82F6"
+					translucent={true}
+				/>
 				<AppNavigator />
 			</ThemeProvider>
 		</SafeAreaProvider>

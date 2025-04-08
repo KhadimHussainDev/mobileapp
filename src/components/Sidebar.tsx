@@ -10,6 +10,7 @@ import {
 	View,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { changeLanguage } from "../i18n/i18n";
 import { RootStackParamList } from "../navigation/types";
 import { useTheme } from "../themes/ThemeProvider";
 
@@ -21,7 +22,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 	const navigation =
 		useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-	const { t } = useTranslation("header");
+	const { t, i18n } = useTranslation("header");
 	const { colors, themeColors, theme, toggleTheme } = useTheme();
 
 	const menuItems = [
@@ -34,6 +35,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 	const navigateTo = (screen: keyof RootStackParamList) => {
 		onClose();
 		navigation.navigate(screen);
+	};
+
+	const handleLanguageChange = async (lang: string) => {
+		await changeLanguage(lang);
 	};
 
 	if (!isOpen) {
@@ -87,6 +92,47 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 							{t("signup")}
 						</Text>
 					</TouchableOpacity>
+
+					<View style={styles.divider} />
+
+					<View style={styles.languageContainer}>
+						<TouchableOpacity
+							style={[
+								styles.languageButton,
+								i18n.language === "en" && styles.activeLanguage,
+							]}
+							onPress={() => handleLanguageChange("en")}
+						>
+							<Text
+								style={[
+									styles.languageText,
+									{
+										color: i18n.language === "en" ? "white" : colors.customBlue,
+									},
+								]}
+							>
+								English
+							</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={[
+								styles.languageButton,
+								i18n.language === "fr" && styles.activeLanguage,
+							]}
+							onPress={() => handleLanguageChange("fr")}
+						>
+							<Text
+								style={[
+									styles.languageText,
+									{
+										color: i18n.language === "fr" ? "white" : colors.customBlue,
+									},
+								]}
+							>
+								Français
+							</Text>
+						</TouchableOpacity>
+					</View>
 
 					<View style={styles.divider} />
 
@@ -167,6 +213,29 @@ const styles = StyleSheet.create({
 		height: 1,
 		backgroundColor: "#E5E7EB",
 		marginVertical: 15,
+	},
+	languageContainer: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginVertical: 15,
+	},
+	languageButton: {
+		flex: 1,
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 8,
+		marginHorizontal: 4,
+		alignItems: "center",
+		borderWidth: 1,
+		borderColor: "#E5E7EB",
+	},
+	activeLanguage: {
+		backgroundColor: "#3B82F6",
+		borderColor: "#3B82F6",
+	},
+	languageText: {
+		fontSize: 14,
+		fontWeight: "500",
 	},
 });
 
