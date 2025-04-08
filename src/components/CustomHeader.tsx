@@ -1,0 +1,120 @@
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { RootStackParamList } from "../navigation/types";
+import { useTheme } from "../themes/ThemeProvider";
+
+type CustomHeaderProps = {
+	title: string;
+	showBackButton?: boolean;
+	onBackPress?: () => void;
+	onMenuPress?: () => void;
+};
+
+const CustomHeader: React.FC<CustomHeaderProps> = ({
+	title,
+	showBackButton = false,
+	onBackPress,
+	onMenuPress,
+}) => {
+	const navigation =
+		useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+	const { t } = useTranslation("header");
+	const { colors, theme, toggleTheme } = useTheme();
+
+	const handleLogin = () => {
+		navigation.navigate("Login");
+	};
+
+	const handleSignUp = () => {
+		navigation.navigate("SignUp");
+	};
+
+	return (
+		<View style={[styles.container, { backgroundColor: colors.customBlue }]}>
+			<View style={styles.leftContainer}>
+				{showBackButton ? (
+					<TouchableOpacity onPress={onBackPress} style={styles.iconButton}>
+						<Icon name="arrow-back" size={24} color={colors.white} />
+					</TouchableOpacity>
+				) : (
+					<TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
+						<Icon name="menu" size={24} color={colors.white} />
+					</TouchableOpacity>
+				)}
+				<Text style={styles.title}>{title}</Text>
+			</View>
+
+			<View style={styles.rightContainer}>
+				<TouchableOpacity style={styles.iconButton} onPress={toggleTheme}>
+					<Icon
+						name={theme === "dark" ? "sunny" : "moon"}
+						size={22}
+						color={colors.white}
+					/>
+				</TouchableOpacity>
+
+				<TouchableOpacity style={styles.authButton} onPress={handleLogin}>
+					<Text style={styles.authButtonText}>{t("login")}</Text>
+				</TouchableOpacity>
+
+				<TouchableOpacity
+					style={[styles.authButton, styles.signUpButton]}
+					onPress={handleSignUp}
+				>
+					<Text style={styles.authButtonText}>{t("signup")}</Text>
+				</TouchableOpacity>
+			</View>
+		</View>
+	);
+};
+
+const styles = StyleSheet.create({
+	container: {
+		height: 60,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingHorizontal: 16,
+		elevation: 4,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 2,
+	},
+	leftContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	iconButton: {
+		marginRight: 16,
+	},
+	title: {
+		fontSize: 20,
+		fontWeight: "bold",
+		color: "white",
+	},
+	rightContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	authButton: {
+		paddingVertical: 6,
+		paddingHorizontal: 12,
+		borderRadius: 4,
+		backgroundColor: "rgba(255, 255, 255, 0.2)",
+		marginLeft: 8,
+	},
+	signUpButton: {
+		backgroundColor: "rgba(255, 255, 255, 0.3)",
+	},
+	authButtonText: {
+		color: "white",
+		fontWeight: "500",
+		fontSize: 14,
+	},
+});
+
+export default CustomHeader;
