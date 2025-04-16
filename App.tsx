@@ -1,9 +1,11 @@
 import React from "react";
-import { LogBox, StatusBar } from "react-native";
+import { LogBox, Platform, StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./src/i18n/i18n";
+// Import polyfills for web
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { ThemeProvider } from "./src/themes/ThemeProvider";
+import "./src/utils/webPolyfills";
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -15,6 +17,12 @@ LogBox.ignoreLogs([
 	"AsyncStorage has been extracted from react-native",
 	// Add any other warnings you want to ignore
 ]);
+
+// Ensure the app renders correctly on web
+if (Platform.OS === "web") {
+	// Apply any web-specific global settings here
+	console.log("Running on web with mobile UI");
+}
 
 const App = () => {
 	return (
