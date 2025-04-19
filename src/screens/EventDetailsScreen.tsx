@@ -3,21 +3,60 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+	ActivityIndicator,
 	Image,
+	ImageBackground,
 	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
 	View,
 } from "react-native";
-import CustomButton from "../components/CustomButton";
-import { Event, events, organizers } from "../constants/mockData";
+import { Event } from "../constants/mockData";
 import { RootStackParamList } from "../navigation/types";
+import dbService from "../services/DatabaseService";
 import { useTheme } from "../themes/ThemeProvider";
 import ScreenWrapper from "./ScreenWrapper";
 
+// Simple countdown component
+const Countdown = ({ targetDate }: { targetDate: Date }) => {
+	const [timeLeft, setTimeLeft] = useState<string>("");
+	const { t } = useTranslation("doc");
+
+	useEffect(() => {
+		const deadline = targetDate.getTime();
+
+		const timer = setInterval(() => {
+			const now = new Date().getTime();
+			const distance = deadline - now;
+
+			if (distance < 0) {
+				clearInterval(timer);
+				setTimeLeft(t("eventEnded"));
+				return;
+			}
+
+			const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+			const hours = Math.floor(
+				(distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+			);
+			const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+			const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+			setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, [targetDate, t]);
+
+	return <Text style={styles.countdown}>{timeLeft}</Text>;
+};
+
 type EventDetailsRouteProp = RouteProp<RootStackParamList, "EventDetails">;
-type EventDetailsNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type EventDetailsNavigationProp = NativeStackNavigationProp<
+	RootStackParamList,
+	"EventDetails"
+>;
 
 const EventDetailsScreen = () => {
 	const { t } = useTranslation("doc");
@@ -25,50 +64,60 @@ const EventDetailsScreen = () => {
 	const navigation = useNavigation<EventDetailsNavigationProp>();
 	const { colors, themeColors } = useTheme();
 	const [event, setEvent] = useState<Event | null>(null);
-	const [timeLeft, setTimeLeft] = useState<string>("");
+	const [organizers, setOrganizers] = useState<any[]>([]);
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		const foundEvent = events.find((e) => e.id === route.params.id);
-		if (foundEvent) {
-			setEvent(foundEvent);
-		}
+		const fetchEventDetails = async () => {
+			setLoading(true);
+			try {
+				// Get event details from the database service
+				const eventData = await dbService.getEventById(route.params.id);
+				const organizersData = await dbService.getAllOrganizers();
+
+				setEvent(eventData);
+				setOrganizers(organizersData);
+			} catch (error) {
+				console.error("Error fetching event details:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchEventDetails();
 	}, [route.params.id]);
 
-	useEffect(() => {
-		if (event) {
-			const deadline = new Date(event.deadline).getTime();
+	// Find the organizer of the event
+	const organizer =
+		event && organizers.find((org) => org.id === event.organizer);
 
-			const timer = setInterval(() => {
-				const now = new Date().getTime();
-				const distance = deadline - now;
-
-				if (distance < 0) {
-					clearInterval(timer);
-					setTimeLeft("Événement terminé");
-					return;
-				}
-
-				const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-				const hours = Math.floor(
-					(distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-				);
-				const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-				const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-				setTimeLeft(`${days}j ${hours}h ${minutes}m ${seconds}s`);
-			}, 1000);
-
-			return () => clearInterval(timer);
-		}
-	}, [event]);
+	if (loading) {
+		return (
+			<ScreenWrapper>
+				<SafeAreaView
+					style={{ flex: 1, backgroundColor: themeColors.background }}
+				>
+					<View style={styles.loadingContainer}>
+						<ActivityIndicator size="large" color={colors.customBlue} />
+					</View>
+				</SafeAreaView>
+			</ScreenWrapper>
+		);
+	}
 
 	if (!event) {
 		return (
-			<SafeAreaView
-				style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-			>
-				<Text>Chargement...</Text>
-			</SafeAreaView>
+			<ScreenWrapper>
+				<SafeAreaView
+					style={{ flex: 1, backgroundColor: themeColors.background }}
+				>
+					<View style={styles.errorContainer}>
+						<Text style={[styles.errorText, { color: themeColors.text }]}>
+							{t("eventNotFound")}
+						</Text>
+					</View>
+				</SafeAreaView>
+			</ScreenWrapper>
 		);
 	}
 
@@ -78,109 +127,104 @@ const EventDetailsScreen = () => {
 				style={{ flex: 1, backgroundColor: themeColors.background }}
 			>
 				<ScrollView style={styles.container}>
-					<Image source={{ uri: event.image }} style={styles.image} />
-
-					<View style={styles.headerContainer}>
-						<Text style={[styles.title, { color: themeColors.text }]}>
-							{event.title}
-						</Text>
-						<Text style={[styles.date, { color: colors.customBlue }]}>
-							{event.date}
-						</Text>
-						<Text style={[styles.location, { color: themeColors.text }]}>
-							{event.location}
-						</Text>
-
-						<View
-							style={[
-								styles.priceContainer,
-								{ backgroundColor: colors.grisvif },
-							]}
-						>
-							<Text style={[styles.price, { color: themeColors.text }]}>
-								{event.price || "Gratuit"}
-							</Text>
-						</View>
-					</View>
-
-					<View
-						style={[
-							styles.countdownContainer,
-							{ backgroundColor: colors.customBlue },
-						]}
+					<ImageBackground
+						source={{ uri: event.image }}
+						style={styles.headerImage}
 					>
-						<Text style={styles.countdownTitle}>Temps restant:</Text>
-						<Text style={styles.countdown}>{timeLeft}</Text>
-					</View>
+						<View style={styles.headerOverlay}>
+							<Text style={styles.title}>{event.title}</Text>
+							<Countdown targetDate={new Date(event.date)} />
+						</View>
+					</ImageBackground>
 
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
-							Description
-						</Text>
-						<Text style={[styles.description, { color: themeColors.text }]}>
-							{event.description}
-						</Text>
-					</View>
-
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
-							Organisateur
-						</Text>
-						<Text style={[styles.organizer, { color: themeColors.text }]}>
-							{event.organizer}
-						</Text>
-					</View>
-
-					<View style={styles.section}>
-						<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
-							Catégorie
-						</Text>
-						<View
-							style={[
-								styles.categoryContainer,
-								{ backgroundColor: colors.grisvif },
-							]}
-						>
-							<Text style={[styles.category, { color: themeColors.text }]}>
-								{event.category}
+					<View style={styles.content}>
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
+								{t("Date")}
+							</Text>
+							<Text style={[styles.sectionText, { color: themeColors.text }]}>
+								{new Date(event.date).toLocaleDateString()} -{" "}
+								{new Date(event.date).toLocaleTimeString([], {
+									hour: "2-digit",
+									minute: "2-digit",
+								})}
 							</Text>
 						</View>
-					</View>
 
-					<CustomButton
-						title={t("register")}
-						onPress={() => {}}
-						style={styles.registerButton}
-					/>
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
+								{t("Location")}
+							</Text>
+							<Text style={[styles.sectionText, { color: themeColors.text }]}>
+								{event.location}
+							</Text>
+						</View>
 
-					<View style={styles.sectionDivider} />
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
+								{t("Price")}
+							</Text>
+							<Text style={[styles.sectionText, { color: themeColors.text }]}>
+								{typeof event.price === "number" && event.price > 0
+									? `${event.price} €`
+									: t("free")}
+							</Text>
+						</View>
 
-					<View style={styles.organizersSection}>
-						<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
-							{t("organizers")}
-						</Text>
-						<View style={styles.organizersList}>
-							{organizers.map((organizer) => (
-								<View key={organizer.id} style={styles.organizerItem}>
-									<Image
-										source={{ uri: organizer.image }}
-										style={styles.organizerImage}
-									/>
-									<Text
-										style={[styles.organizerName, { color: themeColors.text }]}
-									>
-										{organizer.name}
-									</Text>
-									<Text
-										style={[
-											styles.organizerEvents,
-											{ color: colors.customBlue },
-										]}
-									>
-										{organizer.events} événements
-									</Text>
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
+								{t("Description")}
+							</Text>
+							<Text style={[styles.sectionText, { color: themeColors.text }]}>
+								{event.description}
+							</Text>
+						</View>
+
+						{organizer && (
+							<View style={styles.section}>
+								<Text
+									style={[styles.sectionTitle, { color: colors.grandTitre }]}
+								>
+									{t("Organizer")}
+								</Text>
+								<View style={styles.organizerContainer}>
+									{organizer.image && (
+										<Image
+											source={{ uri: organizer.image }}
+											style={styles.organizerLogo}
+										/>
+									)}
+									<View style={styles.organizerInfo}>
+										<Text
+											style={[
+												styles.organizerName,
+												{ color: themeColors.text },
+											]}
+										>
+											{organizer.name}
+										</Text>
+									</View>
 								</View>
-							))}
+							</View>
+						)}
+
+						<View style={styles.section}>
+							<Text style={[styles.sectionTitle, { color: colors.grandTitre }]}>
+								{t("Category")}
+							</Text>
+							<View style={styles.categoryContainer}>
+								<Text
+									style={[
+										styles.category,
+										{
+											backgroundColor: colors.customBlue,
+											color: colors.white,
+										},
+									]}
+								>
+									{event.category}
+								</Text>
+							</View>
 						</View>
 					</View>
 				</ScrollView>
@@ -192,55 +236,43 @@ const EventDetailsScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 16,
 	},
-	image: {
-		width: "100%",
-		height: 200,
-		borderRadius: 12,
-		marginBottom: 20,
+	loadingContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
 	},
-	headerContainer: {
-		marginBottom: 20,
+	errorContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 20,
+	},
+	errorText: {
+		fontSize: 18,
+		textAlign: "center",
+	},
+	headerImage: {
+		height: 250,
+		justifyContent: "flex-end",
+	},
+	headerOverlay: {
+		backgroundColor: "rgba(0,0,0,0.4)",
+		padding: 20,
 	},
 	title: {
 		fontSize: 24,
 		fontWeight: "bold",
-		marginBottom: 8,
-	},
-	date: {
-		fontSize: 16,
-		marginBottom: 4,
-	},
-	location: {
-		fontSize: 16,
-		marginBottom: 12,
-	},
-	priceContainer: {
-		alignSelf: "flex-start",
-		paddingVertical: 6,
-		paddingHorizontal: 12,
-		borderRadius: 20,
-	},
-	price: {
-		fontSize: 16,
-		fontWeight: "bold",
-	},
-	countdownContainer: {
-		padding: 15,
-		borderRadius: 8,
-		marginBottom: 20,
-		alignItems: "center",
-	},
-	countdownTitle: {
 		color: "white",
-		fontSize: 16,
-		marginBottom: 5,
+		marginBottom: 10,
 	},
 	countdown: {
 		color: "white",
-		fontSize: 20,
+		fontSize: 18,
 		fontWeight: "bold",
+	},
+	content: {
+		padding: 20,
 	},
 	section: {
 		marginBottom: 20,
@@ -250,54 +282,42 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		marginBottom: 8,
 	},
-	description: {
+	sectionText: {
 		fontSize: 16,
 		lineHeight: 24,
 	},
-	organizer: {
-		fontSize: 16,
-	},
 	categoryContainer: {
-		alignSelf: "flex-start",
+		flexDirection: "row",
+	},
+	category: {
 		paddingVertical: 6,
 		paddingHorizontal: 12,
 		borderRadius: 20,
+		overflow: "hidden",
+		fontSize: 14,
+		fontWeight: "bold",
 	},
-	category: {
-		fontSize: 16,
-	},
-	registerButton: {
-		marginVertical: 20,
-	},
-	sectionDivider: {
-		height: 1,
-		backgroundColor: "#E5E7EB",
-		marginVertical: 20,
-	},
-	organizersSection: {
-		marginBottom: 20,
-	},
-	organizersList: {
+	organizerContainer: {
 		flexDirection: "row",
-		flexWrap: "wrap",
-		justifyContent: "space-between",
+		alignItems: "center",
 	},
-	organizerItem: {
-		width: "48%",
-		marginBottom: 15,
+	organizerLogo: {
+		width: 60,
+		height: 60,
+		borderRadius: 30,
+		marginRight: 15,
 	},
-	organizerImage: {
-		width: "100%",
-		height: 100,
-		borderRadius: 8,
-		marginBottom: 8,
+	organizerInfo: {
+		flex: 1,
 	},
 	organizerName: {
+		fontSize: 16,
 		fontWeight: "bold",
 		marginBottom: 4,
 	},
-	organizerEvents: {
-		fontSize: 12,
+	organizerDescription: {
+		fontSize: 14,
+		lineHeight: 20,
 	},
 });
 

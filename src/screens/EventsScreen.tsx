@@ -4,9 +4,10 @@ import {
 	useNavigation,
 } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+	ActivityIndicator,
 	FlatList,
 	SafeAreaView,
 	StyleSheet,
@@ -17,8 +18,9 @@ import {
 } from "react-native";
 import CustomButton from "../components/CustomButton";
 import EventCard from "../components/EventCard";
-import { events } from "../constants/mockData";
+import { Event } from "../constants/mockData";
 import { MainTabParamList, RootStackParamList } from "../navigation/types";
+import dbService from "../services/DatabaseService";
 import { useTheme } from "../themes/ThemeProvider";
 import ScreenWrapper from "./ScreenWrapper";
 
@@ -34,6 +36,26 @@ const EventsScreen = () => {
 	const [showFilter, setShowFilter] = useState(false);
 	const [searchText, setSearchText] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+	const [events, setEvents] = useState<Event[]>([]);
+	const [loading, setLoading] = useState(true);
+
+	// Fetch events when component mounts
+	useEffect(() => {
+		const fetchEvents = async () => {
+			setLoading(true);
+			try {
+				// Get events from the database service
+				const allEvents = await dbService.getAllEvents();
+				setEvents(allEvents);
+			} catch (error) {
+				console.error("Error fetching events:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchEvents();
+	}, []);
 
 	const navigateToEventDetails = (id: string) => {
 		navigation.navigate("EventDetails", { id });
@@ -167,14 +189,31 @@ const EventsScreen = () => {
 						</View>
 					)}
 
-					<FlatList
-						data={filterEvents()}
-						keyExtractor={(item) => item.id}
-						renderItem={({ item }) => (
-							<EventCard event={item} onPress={navigateToEventDetails} />
-						)}
-						contentContainerStyle={styles.eventsList}
-					/>
+					{loading ? (
+						<View style={styles.loaderContainer}>
+							<ActivityIndicator size="large" color={colors.customBlue} />
+						</View>
+					) : (
+						<FlatList
+							data={filterEvents()}
+							keyExtractor={(item) => item.id}
+							renderItem={({ item }) => (
+								<EventCard event={item} onPress={navigateToEventDetails} />
+							)}
+							contentContainerStyle={styles.eventsList}
+							ListEmptyComponent={
+								<Text
+									style={{
+										color: themeColors.text,
+										textAlign: "center",
+										marginTop: 20,
+									}}
+								>
+									No events found
+								</Text>
+							}
+						/>
+					)}
 				</View>
 			</SafeAreaView>
 		</ScreenWrapper>
@@ -196,6 +235,11 @@ const styles = StyleSheet.create({
 	},
 	headerSubtitle: {
 		fontSize: 16,
+	},
+	loaderContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 	searchContainer: {
 		flexDirection: "row",

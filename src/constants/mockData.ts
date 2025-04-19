@@ -21,7 +21,7 @@ export const events: Event[] = [
     description: 'Un festival de musique en plein air avec des artistes locaux et internationaux.',
     category: 'Musique',
     price: '$35',
-    organizer: 'Ottawa Events Inc.',
+    organizer: '1',
     deadline: '2023-06-14T23:59:59',
   },
   {
@@ -33,7 +33,7 @@ export const events: Event[] = [
     description: 'Une exposition mettant en vedette des artistes contemporains locaux.',
     category: 'Art',
     price: '$10',
-    organizer: 'Galerie d\'art d\'Ottawa',
+    organizer: '2',
     deadline: '2023-07-09T23:59:59',
   },
   {
@@ -45,7 +45,7 @@ export const events: Event[] = [
     description: 'Course annuelle de marathon à travers les rues d\'Ottawa.',
     category: 'Sport',
     price: '$50',
-    organizer: 'Run Ottawa',
+    organizer: '3',
     deadline: '2023-08-15T23:59:59',
   },
   {
@@ -57,7 +57,7 @@ export const events: Event[] = [
     description: 'Marché de produits frais locaux et d\'artisanat.',
     category: 'Marché',
     price: null,
-    organizer: 'Association des fermiers d\'Ottawa',
+    organizer: '4',
     deadline: '2023-05-28T08:00:00',
   },
   {
@@ -69,9 +69,10 @@ export const events: Event[] = [
     description: 'Une conférence sur les dernières tendances technologiques.',
     category: 'Technologie',
     price: '$100',
-    organizer: 'Tech Ottawa',
+    organizer: '3',
     deadline: '2023-09-01T23:59:59',
   },
+
 ];
 
 export const organizers = [
